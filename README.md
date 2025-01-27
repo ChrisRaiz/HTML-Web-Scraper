@@ -1,6 +1,6 @@
-# Web-Scraper-Prototype
+# HTML-Web-Scraper
 
-Initial build to understand the basics of programming a static web scraper utilizing the requests and beautiful soup libraries
+HTML-Web-Scraper is a basic static web scraper utilizing the requests and beautiful soup libraries
 
 ## Creating a Virtual Environment (Python's venv module)
 
