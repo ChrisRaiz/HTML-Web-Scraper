@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTML Web Scraper · Documentation</title>
+<meta name="description" content="Documentation for HTML Web Scraper, a Python scraper that downloads static pages with Requests and extracts data from their HTML with Beautiful Soup.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #11140F;
+  --panel: #181C15;
+  --panel-2: #1F251B;
+  --line: #2D3527;
+  --text: #EAEFE3;
+  --muted: #9AA68E;
+  --leaf: #8FD47E;
+  --amber: #E8B649;
+  --good: #8FD47E;
+  --warn: #E8B649;
+  --bad: #EF7C6B;
+  --display: "Space Grotesk", "Inter", sans-serif;
+  --body: "Inter", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before { animation: none !important; transition: none !important; } }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.65 var(--body);
+  background-image: radial-gradient(rgba(143,212,126,.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+a { color: var(--leaf); text-decoration-color: rgba(143,212,126,.4); text-underline-offset: 3px; }
+a:hover { text-decoration-color: var(--leaf); }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 4px; }
+code { font: 0.86em var(--mono); background: var(--panel-2); border: 1px solid var(--line); padding: .1em .4em; border-radius: 5px; color: #D8EBCF; }
+
+/* Layout */
+.shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); max-width: 1180px; margin: 0 auto; }
+nav.side { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 32px 24px; border-right: 1px solid var(--line); }
+.brand { font: 700 18px/1.2 var(--display); color: var(--text); text-decoration: none; display: flex; gap: 10px; align-items: center; }
+.brand svg { flex: none; }
+.side ol { list-style: none; padding: 0; margin: 32px 0 0; }
+.side li a { display: block; padding: 7px 12px; margin: 2px 0; border-radius: 6px; color: var(--muted); text-decoration: none; font-size: 15px; border-left: 2px solid transparent; }
+.side li a:hover { color: var(--text); background: var(--panel); }
+.side li a.active { color: var(--text); background: var(--panel); border-left-color: var(--amber); }
+.side .sub a { padding-left: 26px; font-size: 14px; }
+.side .repo { display: inline-flex; gap: 8px; align-items: center; margin-top: 32px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); text-decoration: none; font-size: 14px; }
+.side .repo:hover { border-color: var(--leaf); }
+
+main { padding: 56px 56px 96px; min-width: 0; }
+.content { max-width: 760px; }
+
+/* Hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 40px; align-items: center; max-width: 1000px; margin-bottom: 72px; }
+h1 { font: 700 clamp(36px, 5vw, 52px)/1.05 var(--display); margin: 0 0 20px; letter-spacing: -0.02em; }
+.lede { font-size: 18px; color: var(--muted); margin: 0; max-width: 34em; }
+.stats { grid-column: 1 / -1; border-top: 1px solid var(--line); padding: 24px 0 0; display: flex; flex-wrap: wrap; gap: 12px 40px; margin: 0; list-style: none; }
+.stats li { font-size: 14px; color: var(--muted); }
+.stats strong { display: block; font: 600 26px/1.2 var(--display); color: var(--text); }
+
+/* The memorable element: an HTML job card with each tag mapped to the field it becomes */
+.card-wrap { position: relative; padding-right: 128px; margin: 0; }
+.jobcard { width: 330px; border: 1px solid var(--line); border-radius: 10px; background: #0C0F0A; box-shadow: 0 18px 40px rgba(0,0,0,.45); }
+.jobcard .head { padding: 8px 12px; border-bottom: 1px solid var(--line); font: 12px var(--mono); color: var(--muted); display: flex; justify-content: space-between; }
+.jobcard pre { margin: 0; padding: 12px 14px 14px; font: 12px/1.75 var(--mono); color: #C9D6BF; overflow: visible; }
+.jobcard .t { color: #7FA8D9; }
+.jobcard .a { color: var(--amber); }
+.jobcard .v { color: var(--text); }
+.jobcard .ln { position: relative; display: block; }
+.jobcard .hit { background: rgba(143,212,126,.10); border-radius: 3px; margin: 0 -6px; padding: 0 6px; }
+.tag { position: absolute; left: calc(100% + 26px); top: 50%; transform: translateY(-50%); font: 12px var(--body); font-weight: 600; color: var(--leaf); white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.tag::before { content: ""; width: 22px; border-top: 1px dashed rgba(143,212,126,.55); }
+.caption { font-size: 13px; color: var(--muted); margin-top: 14px; max-width: 300px; }
+
+/* Sections */
+section { margin-top: 80px; }
+h2 { font: 600 30px/1.2 var(--display); margin: 0 0 16px; display: flex; align-items: baseline; gap: 14px; letter-spacing: -0.01em; }
+h2 .n { font: 500 15px var(--mono); color: var(--amber); }
+h3 { font: 600 20px/1.3 var(--display); margin: 44px 0 12px; }
+p { margin: 0 0 16px; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: 20px 0 24px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th { text-align: left; font: 600 13px/1.4 var(--body); color: var(--muted); padding: 12px 16px; background: var(--panel-2); border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 11px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+
+/* Code */
+.code { position: relative; margin: 14px 0 24px; border: 1px solid var(--line); border-radius: 10px; background: #0C0F0A; overflow: hidden; }
+.code .bar-top { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px 8px 16px; border-bottom: 1px solid var(--line); font: 12px var(--mono); color: var(--muted); }
+.code pre { margin: 0; padding: 16px; overflow-x: auto; font: 14px/1.7 var(--mono); color: #D8E4CF; }
+.code .c { color: #6F7B64; }
+.code .k { color: var(--leaf); }
+.code .s { color: var(--amber); }
+.copy { font: 500 12px var(--body); color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.copy:hover { border-color: var(--leaf); }
+
+/* Steps */
+ol.steps { list-style: none; padding: 0; margin: 20px 0; counter-reset: st; }
+ol.steps > li { counter-increment: st; position: relative; padding-left: 48px; margin-bottom: 20px; }
+ol.steps > li::before { content: counter(st); position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--amber); color: var(--amber); font: 600 14px/28px var(--display); text-align: center; }
+
+/* Callouts */
+.note { border: 1px solid var(--line); border-left: 3px solid var(--leaf); background: var(--panel); border-radius: 8px; padding: 14px 18px; margin: 20px 0; }
+.note.warn { border-left-color: var(--warn); }
+.note strong { color: var(--text); }
+
+/* Flow diagram */
+.flow { margin: 28px 0; padding: 24px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.flow svg { width: 100%; height: auto; display: block; }
+
+footer { margin-top: 96px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+
+/* Responsive */
+@media (max-width: 1100px) { .hero { grid-template-columns: 1fr; } }
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+  nav.side { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 20px 16px; }
+  .side ol { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 16px; }
+  .side .sub { display: none; }
+  .side li a { border-left: 0; padding: 6px 10px; }
+  .side .repo { margin-top: 12px; }
+  main { padding: 40px 16px 64px; }
+}
+@media (max-width: 520px) {
+  .card-wrap { padding-right: 0; }
+  .tag { display: none; }
+  .jobcard, .caption { width: 100%; max-width: none; }
+  .jobcard pre { overflow-x: auto; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="side" aria-label="Documentation sections">
+    <a class="brand" href="#top">
+      <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="1" y="1" width="26" height="26" rx="6" fill="none" stroke="#E8B649" stroke-width="1.5"/><path d="M10 9l-4 5 4 5M18 9l4 5-4 5" fill="none" stroke="#8FD47E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      HTML Web Scraper
+    </a>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#install">Installation</a></li>
+      <li><a href="#usage">Usage</a></li>
+      <li class="sub"><a href="#output">Sample output</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#adapting">Adapting it</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ol>
+    <a class="repo" href="https://github.com/ChrisRaiz/HTML-Web-Scraper">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      View on GitHub
+    </a>
+  </nav>
+
+  <main id="top">
+    <header class="hero">
+      <div>
+        <h1>HTML Web Scraper</h1>
+        <p class="lede">Downloads a static web page with Requests, parses it with Beautiful Soup, and pulls out exactly the pieces you want. This project reads a sample job board and prints every Python job's title, company, location, and apply link.</p>
+      </div>
+      <figure class="card-wrap">
+        <div class="jobcard" role="img" aria-label="The HTML for one job listing, with the title, company, location, and apply link tags mapped to the fields the scraper extracts">
+          <div class="head"><span>div.card-content</span><span>1 of 100</span></div>
+<pre><span class="ln"><span class="t">&lt;h2</span> <span class="a">class</span>=<span class="a">"title"</span><span class="t">&gt;</span></span><span class="ln hit">  <span class="v">Senior Python Developer</span><span class="tag">Title</span></span><span class="ln"><span class="t">&lt;h3</span> <span class="a">class</span>=<span class="a">"company"</span><span class="t">&gt;</span></span><span class="ln hit">  <span class="v">Payne, Roberts and Davis</span><span class="tag">Company</span></span><span class="ln"><span class="t">&lt;p</span> <span class="a">class</span>=<span class="a">"location"</span><span class="t">&gt;</span></span><span class="ln hit">  <span class="v">Stewartbury, AA</span><span class="tag">Location</span></span><span class="ln"><span class="t">&lt;a</span> <span class="a">href</span>=</span><span class="ln hit">  <span class="v">".../senior-python-developer-0.html"</span><span class="tag">Apply link</span></span></pre>
+        </div>
+        <figcaption class="caption">One job card's HTML, and the field the scraper pulls from each tag.</figcaption>
+      </figure>
+      <ul class="stats">
+        <li><strong>100</strong>job listings parsed</li>
+        <li><strong>10</strong>Python jobs matched</li>
+        <li><strong>4</strong>fields per job</li>
+      </ul>
+    </header>
+
+    <div class="content">
+      <section id="overview" style="margin-top:0">
+        <h2><span class="n">1</span>Overview</h2>
+        <p>HTML Web Scraper is a short, heavily commented Python script that shows the core web scraping workflow for <strong>static</strong> pages: pages whose content is already in the HTML the server sends back.</p>
+        <p>It targets <a href="https://realpython.github.io/fake-jobs/">Fake Python Jobs</a>, a practice site from Real Python that lists 100 made-up job postings. The script:</p>
+        <ol class="steps">
+          <li>Downloads the page with <code>requests.get()</code>.</li>
+          <li>Parses the HTML into a tree with Beautiful Soup.</li>
+          <li>Finds the results container by its <code>id</code>, then every job card inside it by class.</li>
+          <li>Filters the cards to jobs whose title mentions Python.</li>
+          <li>Prints each match's title, company, location, and links.</li>
+        </ol>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Field</th><th>HTML it comes from</th><th>Example</th></tr></thead>
+          <tbody>
+            <tr><td>Title</td><td><code>&lt;h2 class="title"&gt;</code></td><td>Senior Python Developer</td></tr>
+            <tr><td>Company</td><td><code>&lt;h3 class="company"&gt;</code></td><td>Payne, Roberts and Davis</td></tr>
+            <tr><td>Location</td><td><code>&lt;p class="location"&gt;</code></td><td>Stewartbury, AA</td></tr>
+            <tr><td>Links</td><td>The <code>href</code> of every <code>&lt;a&gt;</code> in the card</td><td><a href="https://realpython.github.io/fake-jobs/jobs/senior-python-developer-0.html">senior-python-developer-0.html</a></td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section id="install">
+        <h2><span class="n">2</span>Requirements and installation</h2>
+        <p>You need Python 3 and two packages: <a href="https://requests.readthedocs.io/">Requests</a> and <a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/">Beautiful Soup 4</a>.</p>
+        <ol class="steps">
+          <li>Clone the repo and move into it:
+            <div class="code"><div class="bar-top"><span>bash</span><button class="copy" type="button">Copy</button></div><pre>git clone https://github.com/ChrisRaiz/HTML-Web-Scraper.git
+cd HTML-Web-Scraper</pre></div>
+          </li>
+          <li>Create and activate a virtual environment:
+            <div class="code"><div class="bar-top"><span>bash</span><button class="copy" type="button">Copy</button></div><pre>python3 -m venv venv
+source venv/bin/activate      <span class="c"># Windows: venv\Scripts\activate</span></pre></div>
+          </li>
+          <li>Install the dependencies while the environment is active:
+            <div class="code"><div class="bar-top"><span>bash</span><button class="copy" type="button">Copy</button></div><pre>pip install requests beautifulsoup4</pre></div>
+          </li>
+        </ol>
+        <p>Run <code>deactivate</code> to leave the virtual environment when you're done.</p>
+      </section>
+
+      <section id="usage">
+        <h2><span class="n">3</span>Usage</h2>
+        <p>Run the script from the project folder:</p>
+        <div class="code"><div class="bar-top"><span>bash</span><button class="copy" type="button">Copy</button></div><pre>python3 static_web_scraper.py</pre></div>
+        <p>Nothing is saved to disk. Everything is printed to the terminal in this order:</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Order</th><th>What's printed</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>The raw HTML of the whole page</td></tr>
+            <tr><td>2</td><td>The results container, indented with <code>.prettify()</code></td></tr>
+            <tr><td>3</td><td>All 100 job card elements</td></tr>
+            <tr><td>4</td><td>The title, company, and location of all 100 jobs</td></tr>
+            <tr><td>5</td><td>The title, company, and location of the 10 Python jobs</td></tr>
+            <tr><td>6</td><td>Every link in the 10 Python job cards, each prefixed with "Apply Here:"</td></tr>
+          </tbody>
+        </table></div>
+        <div class="note">The first three steps are there to show what each stage of parsing looks like, so the full output runs to about 10,000 lines. Comment out the <code>print</code> calls you don't need, or pipe the output into a file with <code>python3 static_web_scraper.py &gt; output.txt</code>.</div>
+
+        <h3 id="output">Sample output</h3>
+        <p>The end of a run, showing a Python job and its links:</p>
+        <div class="code"><div class="bar-top"><span>terminal</span><button class="copy" type="button">Copy</button></div><pre>Senior Python Developer
+Payne, Roberts and Davis
+Stewartbury, AA
+
+Software Engineer (Python)
+Garcia PLC
+Ericberg, AE
+
+<span class="k">Apply Here:</span> https://www.realpython.com
+
+<span class="k">Apply Here:</span> https://realpython.github.io/fake-jobs/jobs/senior-python-developer-0.html</pre></div>
+        <div class="note warn">Each job card has two links: <strong>Learn</strong>, which goes to realpython.com, and <strong>Apply</strong>. The script prints both, so every second "Apply Here" line is the Learn link. See <a href="#adapting">Adapting it</a> for a way to keep only the Apply link.</div>
+      </section>
+
+      <section id="how">
+        <h2><span class="n">4</span>How it works</h2>
+        <p>The script narrows the page down in stages, from the whole document to a single piece of text.</p>
+        <figure class="flow" style="margin-left:0;margin-right:0">
+          <svg viewBox="0 0 700 250" role="img" aria-label="Flow: the URL is downloaded with requests.get, parsed by Beautiful Soup, narrowed to the ResultsContainer, split into 100 job cards, filtered to 10 Python jobs, and printed as title, company, location, and links.">
+            <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#5F6E52"/></marker></defs>
+            <g fill="none" stroke="#5F6E52" stroke-width="1.3">
+              <path d="M200 52H246" marker-end="url(#ah)"/>
+              <path d="M454 52H492" marker-end="url(#ah)"/>
+              <path d="M590 78V110H112V140" marker-end="url(#ah)"/>
+              <path d="M200 166H246" marker-end="url(#ah)"/>
+              <path d="M454 166H492" marker-end="url(#ah)"/>
+            </g>
+            <g font-family="Inter, sans-serif" text-anchor="middle">
+              <rect x="20" y="26" width="180" height="52" rx="8" fill="#1F251B" stroke="#2D3527"/>
+              <text x="110" y="48" fill="#EAEFE3" font-size="14" font-weight="600">Download</text>
+              <text x="110" y="66" fill="#9AA68E" font-size="12">requests.get(URL)</text>
+              <rect x="246" y="26" width="208" height="52" rx="8" fill="#1F251B" stroke="#2D3527"/>
+              <text x="350" y="48" fill="#EAEFE3" font-size="14" font-weight="600">Parse</text>
+              <text x="350" y="66" fill="#9AA68E" font-size="12">BeautifulSoup(html.parser)</text>
+              <rect x="492" y="26" width="188" height="52" rx="8" fill="#1F251B" stroke="#2D3527"/>
+              <text x="586" y="48" fill="#EAEFE3" font-size="14" font-weight="600">Find the container</text>
+              <text x="586" y="66" fill="#9AA68E" font-size="12">id="ResultsContainer"</text>
+
+              <rect x="20" y="140" width="180" height="52" rx="8" fill="#1F251B" stroke="#2D3527"/>
+              <text x="110" y="162" fill="#EAEFE3" font-size="14" font-weight="600">Find job cards</text>
+              <text x="110" y="180" fill="#9AA68E" font-size="12">100 × div.card-content</text>
+              <rect x="246" y="140" width="208" height="52" rx="8" fill="rgba(232,182,73,.10)" stroke="#E8B649" stroke-width="1.3"/>
+              <text x="350" y="162" fill="#EAEFE3" font-size="14" font-weight="600">Filter to Python jobs</text>
+              <text x="350" y="180" fill="#F1D9A0" font-size="12">10 titles mention "python"</text>
+              <rect x="492" y="140" width="188" height="52" rx="8" fill="rgba(143,212,126,.12)" stroke="#8FD47E" stroke-width="1.5"/>
+              <text x="586" y="162" fill="#EAEFE3" font-size="14" font-weight="600">Extract and print</text>
+              <text x="586" y="180" fill="#C9E9BF" font-size="12">title · company · location · links</text>
+            </g>
+            <text x="350" y="228" font-family="Inter, sans-serif" font-size="12" fill="#9AA68E" text-anchor="middle">Each stage searches only inside the result of the stage before it.</text>
+          </svg>
+        </figure>
+
+        <h3>1. Download and parse</h3>
+        <p><code>requests.get()</code> fetches the page. <code>page.content</code> holds the raw bytes, which Beautiful Soup turns into a tree of elements you can search.</p>
+        <div class="code"><div class="bar-top"><span>static_web_scraper.py</span><button class="copy" type="button">Copy</button></div><pre>URL = <span class="s">"https://realpython.github.io/fake-jobs/"</span>
+page = requests.get(URL)
+soup = BeautifulSoup(page.content, <span class="s">"html.parser"</span>)</pre></div>
+
+        <h3>2. Narrow down to the job cards</h3>
+        <p>Every job sits inside one element with <code>id="ResultsContainer"</code>. Searching inside that element, instead of the whole page, avoids matching anything in the header or footer.</p>
+        <div class="code"><div class="bar-top"><span>static_web_scraper.py</span><button class="copy" type="button">Copy</button></div><pre>results = soup.find(id=<span class="s">"ResultsContainer"</span>)
+job_elements = results.find_all(<span class="s">"div"</span>, class_=<span class="s">"card-content"</span>)</pre></div>
+        <p><code>class_</code> has a trailing underscore because <code>class</code> is a reserved word in Python.</p>
+
+        <h3>3. Extract text from each card</h3>
+        <p>Inside each card, <code>.find()</code> returns the first matching tag. <code>.text</code> gives its text, and <code>.strip()</code> removes the surrounding whitespace and line breaks.</p>
+        <div class="code"><div class="bar-top"><span>static_web_scraper.py</span><button class="copy" type="button">Copy</button></div><pre><span class="k">for</span> job_element <span class="k">in</span> job_elements:
+    title_element = job_element.find(<span class="s">"h2"</span>, class_=<span class="s">"title"</span>)
+    company_element = job_element.find(<span class="s">"h3"</span>, class_=<span class="s">"company"</span>)
+    location_element = job_element.find(<span class="s">"p"</span>, class_=<span class="s">"location"</span>)
+    print(title_element.text.strip())</pre></div>
+
+        <h3>4. Filter by text, then walk up the tree</h3>
+        <p>Passing a function as <code>string=</code> matches tags by their text. This finds the <code>&lt;h2&gt;</code> headings that mention Python, in any capitalization.</p>
+        <div class="code"><div class="bar-top"><span>static_web_scraper.py</span><button class="copy" type="button">Copy</button></div><pre>python_jobs = results.find_all(
+    <span class="s">"h2"</span>, string=<span class="k">lambda</span> text: <span class="s">"python"</span> <span class="k">in</span> text.lower()
+)
+python_job_elements = [
+    h2_element.parent.parent.parent <span class="k">for</span> h2_element <span class="k">in</span> python_jobs
+]</pre></div>
+        <p>A match is only the heading, but the company, location, and links are elsewhere in the card. Going up three parents (<code>h2</code> → <code>div.media-content</code> → <code>div.media</code> → <code>div.card-content</code>) returns the whole card.</p>
+
+        <h3>5. Read link addresses</h3>
+        <p>Tag attributes work like dictionary keys, so <code>link["href"]</code> reads a link's address.</p>
+        <div class="code"><div class="bar-top"><span>static_web_scraper.py</span><button class="copy" type="button">Copy</button></div><pre><span class="k">for</span> link <span class="k">in</span> job_element.find_all(<span class="s">"a"</span>):
+    print(f<span class="s">"Apply Here: {link['href']}"</span>)</pre></div>
+      </section>
+
+      <section id="adapting">
+        <h2><span class="n">5</span>Adapting it to another site</h2>
+        <ol class="steps">
+          <li><strong>Check that the page is static.</strong> Open the page, choose <em>View Page Source</em>, and search for the data you want. If it's in the source, this approach works. If it only appears in the browser's <em>Inspect</em> panel, the page is built with JavaScript (see <a href="#troubleshooting">Troubleshooting</a>).</li>
+          <li><strong>Find the selectors.</strong> Right-click the data and choose <em>Inspect</em>. Note the tag names, classes, and any <code>id</code> on the container around the items.</li>
+          <li><strong>Update the script.</strong> Change <code>URL</code>, the <code>id</code> passed to <code>soup.find()</code>, and the tag and class names in each <code>find()</code> and <code>find_all()</code>.</li>
+          <li><strong>Check the parent depth.</strong> If you keep the text filter, count how many levels separate the matched tag from the item container, and change <code>.parent.parent.parent</code> to match.</li>
+        </ol>
+        <p>A few small improvements are worth making for real use:</p>
+        <div class="code"><div class="bar-top"><span>python</span><button class="copy" type="button">Copy</button></div><pre>page = requests.get(URL, timeout=<span class="s">10</span>)
+page.raise_for_status()                <span class="c"># stop on 404s and server errors</span>
+
+<span class="c"># Keep only the Apply link instead of every link in the card</span>
+apply_link = job_element.find(<span class="s">"a"</span>, string=<span class="s">"Apply"</span>)[<span class="s">"href"</span>]
+
+<span class="c"># Skip headings with no plain text instead of raising an error</span>
+string=<span class="k">lambda</span> text: text <span class="k">and</span> <span class="s">"python"</span> <span class="k">in</span> text.lower()</pre></div>
+        <p>To save results instead of printing them, collect each job in a list of dictionaries and write it out with Python's built-in <code>csv</code> module.</p>
+      </section>
+
+      <section id="troubleshooting">
+        <h2><span class="n">6</span>Troubleshooting and limitations</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Problem</th><th>Cause</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr><td><code>ModuleNotFoundError: No module named 'bs4'</code></td><td>The packages aren't installed, or the virtual environment isn't active</td><td>Activate the environment and run <code>pip install requests beautifulsoup4</code>.</td></tr>
+            <tr><td><code>AttributeError: 'NoneType' object has no attribute 'prettify'</code></td><td><code>soup.find()</code> found nothing, so <code>results</code> is <code>None</code>. The <code>id</code> is wrong, the site changed, or the request returned an error page.</td><td>Check <code>page.status_code</code> and the selectors in your browser's Inspect panel.</td></tr>
+            <tr><td>The data you want is missing from the parsed page</td><td>The page builds its content with JavaScript after it loads, so it isn't in the HTML that Requests downloads</td><td>Use a browser automation tool such as Selenium. <a href="https://github.com/ChrisRaiz/WoWHead-NPC-Scraper">WoWHead NPC Scraper</a> shows this approach.</td></tr>
+            <tr><td><code>ConnectionError</code> or the script hangs</td><td>No network connection, or the site is slow to respond</td><td>Check your connection and add <code>timeout=10</code> to <code>requests.get()</code>.</td></tr>
+            <tr><td>Each Python job prints two "Apply Here" links</td><td>The script prints every <code>&lt;a&gt;</code> in the card, including the Learn link</td><td>Find the link by its text instead (see <a href="#adapting">Adapting it</a>).</td></tr>
+          </tbody>
+        </table></div>
+        <div class="note warn"><strong>Scrape responsibly:</strong> Fake Python Jobs is built for practice. Before scraping another site, read its terms of service and <code>robots.txt</code>, and don't send requests faster than a person browsing would.</div>
+      </section>
+
+      <footer>
+        Built by Chris Raiz. Released under the <a href="https://github.com/ChrisRaiz/HTML-Web-Scraper/blob/main/LICENSE">MIT License</a>. Sample data comes from Real Python's Fake Python Jobs practice site.
+      </footer>
+    </div>
+  </main>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var pre = btn.closest('.code').querySelector('pre');
+    var text = pre.innerText.replace(/\s+#.*$/gm, '');
+    var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 1500); };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, function () {}); }
+  });
+});
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll('.side li a'));
+  var targets = links.map(function (a) { return document.querySelector(a.getAttribute('href')); });
+  function update() {
+    var y = window.scrollY + 120, idx = 0;
+    targets.forEach(function (t, i) { if (t && t.offsetTop <= y) idx = i; });
+    links.forEach(function (a, i) { a.classList.toggle('active', i === idx); });
+  }
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+</script>
+</body>
+</html>
